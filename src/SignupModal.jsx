@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, Mail, Building2, Users, ArrowRight, Check } from 'lucide-react'
+import { supabase } from './supabaseClient'
 
 export default function SignupModal({ isOpen, onClose, initialEmail = '', onOpenLegal }) {
     const [step, setStep] = useState(initialEmail ? 2 : 1)
@@ -9,6 +10,7 @@ export default function SignupModal({ isOpen, onClose, initialEmail = '', onOpen
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isComplete, setIsComplete] = useState(false)
     const [privacyAccepted, setPrivacyAccepted] = useState(initialEmail ? true : false)
+    const [error, setError] = useState('')
 
     // Sincronizar cuando cambia initialEmail (ej: viene del CTA form)
     useEffect(() => {
@@ -28,34 +30,80 @@ export default function SignupModal({ isOpen, onClose, initialEmail = '', onOpen
         e.preventDefault()
         if (!privacyAccepted) return
         setIsSubmitting(true)
+        setError('')
 
-        // Simular guardado del email (aquí iría la llamada a la API)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        try {
+            // Guardar email en Supabase
+            const { error: insertError } = await supabase
+                .from('leads')
+                .insert([{ email, source: 'modal_step1' }])
 
-        console.log('Email registrado:', email)
-        setIsSubmitting(false)
-        setStep(2)
+            if (insertError) {
+                // Si ya existe el email, lo ignoramos y continuamos
+                if (insertError.code === '23505') {
+                    console.log('Email ya registrado, continuando...')
+                } else {
+                    throw insertError
+                }
+            }
+
+            console.log('Email guardado en Supabase:', email)
+            setIsSubmitting(false)
+            setStep(2)
+        } catch (err) {
+            console.error('Error guardando email:', err)
+            setError('Error al guardar. Inténtalo de nuevo.')
+            setIsSubmitting(false)
+        }
     }
 
     const handleStep2Submit = async (e) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setError('')
 
-        // Simular guardado de datos adicionales
-        await new Promise(resolve => setTimeout(resolve, 500))
+        try {
+            // Actualizar el lead con info adicional
+            const { error: updateError } = await supabase
+                .from('leads')
+                .update({
+                    business_name: businessName || null,
+                    client_size: clientSize || null
+                })
+                .eq('email', email)
 
-        console.log('Datos adicionales:', { email, businessName, clientSize })
-        setIsSubmitting(false)
-        setIsComplete(true)
+            if (updateError) throw updateError
 
-        // Cerrar después de mostrar confirmación
-        setTimeout(() => {
-            handleClose()
-        }, 2000)
+            console.log('Datos actualizados en Supabase:', { email, businessName, clientSize })
+            setIsSubmitting(false)
+            setIsComplete(true)
+
+            setTimeout(() => {
+                handleClose()
+            }, 2000)
+        } catch (err) {
+            console.error('Error actualizando datos:', err)
+            setError('Error al guardar. Inténtalo de nuevo.')
+            setIsSubmitting(false)
+        }
     }
 
-    const handleSkip = () => {
-        console.log('Usuario omitió paso 2')
+    const handleSkip = async () => {
+        // Si viene del CTA, guardar el email primero
+        if (initialEmail) {
+            try {
+                const { error: insertError } = await supabase
+                    .from('leads')
+                    .insert([{ email: initialEmail, source: 'cta_form' }])
+
+                if (insertError && insertError.code !== '23505') {
+                    console.error('Error en skip:', insertError)
+                }
+            } catch (err) {
+                console.error('Error:', err)
+            }
+        }
+
         setIsComplete(true)
         setTimeout(() => {
             handleClose()
@@ -69,6 +117,7 @@ export default function SignupModal({ isOpen, onClose, initialEmail = '', onOpen
         setClientSize('')
         setIsComplete(false)
         setPrivacyAccepted(false)
+        setError('')
         onClose()
     }
 
@@ -96,6 +145,13 @@ export default function SignupModal({ isOpen, onClose, initialEmail = '', onOpen
                         <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>
                             <span className="progress-number">2</span>
                         </div>
+                    </div>
+                )}
+
+                {/* Error message */}
+                {error && (
+                    <div className="signup-error">
+                        {error}
                     </div>
                 )}
 
