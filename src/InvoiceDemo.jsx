@@ -1,8 +1,5 @@
 import { useState, useCallback } from 'react'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { Upload, FileCheck, AlertCircle, Loader2, X, FileText, ArrowRight } from 'lucide-react'
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY)
 
 // Regla de renombrado predefinida
 const NAMING_RULE = "{FECHA}_{EMPRESA}_{NUMERO}_Factura"
@@ -103,59 +100,40 @@ export default function InvoiceDemo() {
         setResult(null)
 
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
-
             const reader = new FileReader()
             reader.readAsDataURL(image)
 
             reader.onload = async () => {
                 const base64Data = reader.result.split(',')[1]
 
-                const prompt = `Analiza este documento y determina si es una factura válida.
+                // Llamar a la API serverless (protege la API key)
+                const response = await fetch('/api/analyze-invoice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageBase64: base64Data,
+                        mimeType: image.type,
+                    }),
+                })
 
-Si ES una factura, extrae los siguientes datos en formato JSON:
-{
-  "isValidInvoice": true,
-  "nifEmisor": "NIF/CIF del emisor",
-  "nombreEmpresa": "Nombre completo/razón social de la empresa emisora",
-  "marcaComercial": "SOLO la denominación comercial corta o marca conocida de la empresa, por ejemplo: si es 'REPSOL Comercial de Productos Petrolíferos S.A.' devuelve solo 'Repsol', si es 'Vodafone España S.A.U.' devuelve solo 'Vodafone', si es 'Supermercados DIA S.A.' devuelve solo 'DIA'",
-  "fecha": "Fecha de la factura en formato DD/MM/YYYY",
-  "numeroFactura": "Número de factura",
-  "baseImponible": "Base imponible en euros",
-  "iva": "Importe del IVA",
-  "total": "Total de la factura"
-}
-
-Si NO es una factura (es otra cosa como una foto, documento diferente, etc.), responde:
-{
-  "isValidInvoice": false,
-  "reason": "Breve explicación de por qué no es una factura"
-}
-
-Responde SOLO con el JSON, sin texto adicional.`
-
-                const result = await model.generateContent([
-                    prompt,
-                    {
-                        inlineData: {
-                            mimeType: image.type,
-                            data: base64Data
-                        }
-                    }
-                ])
-
-                const response = await result.response
-                const text = response.text()
-
-                // Parse JSON from response
-                const jsonMatch = text.match(/\{[\s\S]*\}/)
-                if (jsonMatch) {
-                    const data = JSON.parse(jsonMatch[0])
-                    setResult(data)
-                } else {
-                    setError('No se pudo procesar la respuesta')
+                if (!response.ok) {
+                    const errorData = await response.json()
+                    throw new Error(errorData.error || 'Error al analizar la factura')
                 }
 
+                const data = await response.json()
+
+                // Añadir flag de factura válida para compatibilidad
+                if (data.nombreEmpresa || data.marcaComercial) {
+                    data.isValidInvoice = true
+                    data.fecha = data.fechaFactura
+                } else {
+                    data.isValidInvoice = false
+                }
+
+                setResult(data)
                 setLoading(false)
             }
         } catch (err) {
