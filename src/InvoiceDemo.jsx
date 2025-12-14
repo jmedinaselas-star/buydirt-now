@@ -301,11 +301,22 @@ export default function InvoiceDemo() {
     }
 
     const reset = () => {
-        setImage(null)
-        setOriginalName('')
-        setImagePreview(null)
-        setResult(null)
-        setError(null)
+        // En modo mock, cargar otra factura aleatoria directamente
+        if (isMockMode) {
+            const randomIndex = Math.floor(Math.random() * MOCK_INVOICES.length)
+            const mockInvoice = MOCK_INVOICES[randomIndex]
+            setImagePreview(mockInvoice.imagePath)
+            setOriginalName(mockInvoice.fileName)
+            setResult({ ...mockInvoice, fecha: mockInvoice.fechaFactura })
+            setError(null)
+        } else {
+            // En modo real, volver al formulario de subida
+            setImage(null)
+            setOriginalName('')
+            setImagePreview(null)
+            setResult(null)
+            setError(null)
+        }
     }
 
     const suggestedName = result ? generateSuggestedName(result) : null
