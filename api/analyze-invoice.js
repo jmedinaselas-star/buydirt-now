@@ -25,17 +25,28 @@ export default async function handler(request) {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-        const prompt = `Analiza esta factura y devuelve SOLO un JSON con estos campos exactos:
+        const prompt = `Analiza este documento y determina si es una factura válida.
+
+Si ES una factura, extrae los siguientes datos en formato JSON:
 {
-  "nombreEmpresa": "Nombre fiscal completo del emisor",
-  "marcaComercial": "Nombre comercial o marca (si existe, si no, usar nombre corto)",
-  "cifNif": "CIF/NIF del emisor",
-  "fechaFactura": "Fecha en formato DD-MM-YYYY",
+  "isValidInvoice": true,
+  "nifEmisor": "NIF/CIF del emisor",
+  "nombreEmpresa": "Nombre completo/razón social de la empresa emisora",
+  "marcaComercial": "SOLO la denominación comercial corta o marca conocida de la empresa, por ejemplo: si es 'REPSOL Comercial de Productos Petrolíferos S.A.' devuelve solo 'Repsol', si es 'Vodafone España S.A.U.' devuelve solo 'Vodafone', si es 'Supermercados DIA S.A.' devuelve solo 'DIA'",
+  "fecha": "Fecha de la factura en formato DD/MM/YYYY",
   "numeroFactura": "Número de factura",
-  "importeTotal": "Importe total con IVA",
-  "concepto": "Descripción breve del servicio/producto"
+  "baseImponible": "Base imponible en euros",
+  "iva": "Importe del IVA",
+  "total": "Total de la factura"
 }
-IMPORTANTE: Responde SOLO con el JSON, sin explicaciones ni markdown.`;
+
+Si NO es una factura (es otra cosa como una foto, documento diferente, etc.), responde:
+{
+  "isValidInvoice": false,
+  "reason": "Breve explicación de por qué no es una factura"
+}
+
+Responde SOLO con el JSON, sin texto adicional.`;
 
         const result = await model.generateContent([
             prompt,
