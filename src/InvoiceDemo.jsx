@@ -192,8 +192,8 @@ export default function InvoiceDemo() {
         }
     }
 
-    // Función para comprimir imagen antes de enviar a la API (optimizada para velocidad)
-    const compressImage = (file, maxWidth = 800, quality = 0.7) => {
+    // Función para comprimir imagen antes de enviar a la API (optimizada para Vercel Edge límite ~4MB)
+    const compressImage = (file, maxWidth = 600, quality = 0.5) => {
         return new Promise((resolve) => {
             // Si es PDF, no comprimir
             if (file.type === 'application/pdf') {
