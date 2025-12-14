@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Upload, FileCheck, AlertCircle, Loader2, X, FileText, ArrowRight } from 'lucide-react'
 
-// Regla de renombrado predefinida
-const NAMING_RULE = "{FECHA}_{EMPRESA}_{NUMERO}_Factura"
+// Regla de renombrado predefinida: YYYYMMDD_NumFactura
+const NAMING_RULE = "{FECHA}_{NUMERO}"
 
 // Datos mock para demo sin API - DATOS FICTICIOS EVIDENTES
 const MOCK_INVOICES = [
@@ -92,30 +92,22 @@ const MOCK_INVOICES = [
 const generateSuggestedName = (data) => {
     if (!data || !data.isValidInvoice) return null
 
-    // Limpiar y formatear la fecha (convertir a YYYY-MM-DD)
-    let fecha = data.fecha || 'SIN-FECHA'
-    // Intentar detectar formato DD/MM/YYYY o similar y convertir
+    // Convertir fecha a formato YYYYMMDD
+    let fecha = data.fecha || 'SINFECHA'
     const dateMatch = fecha.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/)
     if (dateMatch) {
         const day = dateMatch[1].padStart(2, '0')
         const month = dateMatch[2].padStart(2, '0')
         const year = dateMatch[3].length === 2 ? '20' + dateMatch[3] : dateMatch[3]
-        fecha = `${year}-${month}-${day}`
+        fecha = `${year}${month}${day}`
     }
 
-    // Usar marca comercial para el nombre (solo la denominación comercial corta)
-    const empresa = (data.marcaComercial || 'DESCONOCIDO')
-        .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '')
-        .replace(/\s+/g, '-')
-        .substring(0, 30)
-
-    // Número de factura
+    // Número de factura (limpiar caracteres especiales)
     const numero = (data.numeroFactura || 'SN')
-        .replace(/[^a-zA-Z0-9\-]/g, '')
+        .replace(/[^a-zA-Z0-9]/g, '')
 
     return NAMING_RULE
         .replace('{FECHA}', fecha)
-        .replace('{EMPRESA}', empresa)
         .replace('{NUMERO}', numero)
         + '.pdf'
 }
