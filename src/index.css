@@ -2370,3 +2370,30 @@ p {
 .modal-privacy label {
     color: var(--color-text-dark-secondary);
 }
+
+/* Invoice Preview Styles */
+.demo-content-with-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.invoice-preview {
+    width: 100%;
+    max-height: 300px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.invoice-preview-image {
+    width: 100%;
+    height: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 12px;
+}

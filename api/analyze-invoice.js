@@ -23,30 +23,23 @@ export default async function handler(request) {
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        // IMPORTANTE: Usar siempre gemini-2.5-flash - NO CAMBIAR
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash',
+            generationConfig: {
+                maxOutputTokens: 500,
+                temperature: 0.1,
+            }
+        });
 
-        const prompt = `Analiza este documento y determina si es una factura válida.
+        const prompt = `Extrae datos de esta factura española en JSON.
 
-Si ES una factura, extrae los siguientes datos en formato JSON:
-{
-  "isValidInvoice": true,
-  "nifEmisor": "NIF/CIF del emisor",
-  "nombreEmpresa": "Nombre completo/razón social de la empresa emisora",
-  "marcaComercial": "SOLO la denominación comercial corta o marca conocida de la empresa, por ejemplo: si es 'REPSOL Comercial de Productos Petrolíferos S.A.' devuelve solo 'Repsol', si es 'Vodafone España S.A.U.' devuelve solo 'Vodafone', si es 'Supermercados DIA S.A.' devuelve solo 'DIA'",
-  "fecha": "Fecha de la factura en formato DD/MM/YYYY",
-  "numeroFactura": "Número de factura",
-  "baseImponible": "Base imponible en euros",
-  "iva": "Importe del IVA",
-  "total": "Total de la factura"
-}
+BUSCA: Fecha (DD/MM/YYYY), NIF emisor, empresa, nº factura, base imponible, IVA, total.
 
-Si NO es una factura (es otra cosa como una foto, documento diferente, etc.), responde:
-{
-  "isValidInvoice": false,
-  "reason": "Breve explicación de por qué no es una factura"
-}
+RESPONDE SOLO JSON:
+{"isValidInvoice":true,"nifEmisor":"X","nombreEmpresa":"X","marcaComercial":"X","fechaFactura":"DD/MM/YYYY","numeroFactura":"X","baseImponible":"X €","iva":"X €","total":"X €"}
 
-Responde SOLO con el JSON, sin texto adicional.`;
+Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
 
         const result = await model.generateContent([
             prompt,
