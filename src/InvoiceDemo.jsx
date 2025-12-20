@@ -1,37 +1,113 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Upload, FileCheck, AlertCircle, Loader2, X, FileText, ArrowRight } from 'lucide-react'
 
-// Regla de renombrado predefinida
-const NAMING_RULE = "{FECHA}_{EMPRESA}_{NUMERO}_Factura"
+// Regla de renombrado predefinida: YYYYMMDD_NumFactura
+const NAMING_RULE = "{FECHA}_{NUMERO}"
+
+// Datos mock para demo sin API - DATOS FICTICIOS EVIDENTES
+const MOCK_INVOICES = [
+    {
+        isValidInvoice: true,
+        nifEmisor: "B-00-DEMO-001",
+        nombreEmpresa: "ESTACIÓN DE SERVICIO DEMO S.L.",
+        marcaComercial: "Repsoil",
+        fechaFactura: "15/11/2024",
+        numeroFactura: "DEMO-2024-001234",
+        baseImponible: "45,00 €",
+        iva: "9,45 €",
+        total: "54,45 €",
+        imagePath: "/demo-invoices/factura-repsoil.png",
+        fileName: "factura-repsoil.png"
+    },
+    {
+        isValidInvoice: true,
+        nifEmisor: "B-00-DEMO-002",
+        nombreEmpresa: "TELÉFONO ROJO S.L.",
+        marcaComercial: "Teléfono Rojo",
+        fechaFactura: "28/11/2024",
+        numeroFactura: "DEMO-2024-789456",
+        baseImponible: "35,54 €",
+        iva: "7,46 €",
+        total: "43,00 €",
+        imagePath: "/demo-invoices/factura-telefono-rojo.png",
+        fileName: "factura-telefono-rojo.png"
+    },
+    {
+        isValidInvoice: true,
+        nifEmisor: "B-00-DEMO-003",
+        nombreEmpresa: "AMAZONIA TIENDA ONLINE S.L.",
+        marcaComercial: "Amazonia",
+        fechaFactura: "02/12/2024",
+        numeroFactura: "DEMO-ES-2024-5678901",
+        baseImponible: "82,64 €",
+        iva: "17,35 €",
+        total: "99,99 €",
+        imagePath: "/demo-invoices/factura-amazonia.png",
+        fileName: "factura-amazonia.png"
+    },
+    {
+        isValidInvoice: true,
+        nifEmisor: "B-00-DEMO-004",
+        nombreEmpresa: "SUPERMERCADOS EJEMPLO S.L.",
+        marcaComercial: "Supermercados Ejemplo",
+        fechaFactura: "10/12/2024",
+        numeroFactura: "DEMO-2024-003421",
+        baseImponible: "67,23 €",
+        iva: "6,72 €",
+        total: "73,95 €",
+        imagePath: "/demo-invoices/factura-supermercados-ejemplo.png",
+        fileName: "factura-supermercados-ejemplo.png"
+    },
+    {
+        isValidInvoice: true,
+        nifEmisor: "B-00-DEMO-005",
+        nombreEmpresa: "ELECTRICIDAD DEMO S.A.",
+        marcaComercial: "Electricidad Demo",
+        fechaFactura: "01/12/2024",
+        numeroFactura: "DEMO-2024-456123",
+        baseImponible: "89,25 €",
+        iva: "18,74 €",
+        total: "107,99 €",
+        imagePath: "/demo-invoices/factura-electricidad-demo.png",
+        fileName: "factura-electricidad-demo.png"
+    },
+    {
+        isValidInvoice: true,
+        nifEmisor: "B-00-DEMO-006",
+        nombreEmpresa: "GRANDES ALMACENES DEMO S.A.",
+        marcaComercial: "Grandes Almacenes Demo",
+        fechaFactura: "05/12/2024",
+        numeroFactura: "DEMO-2024-987654",
+        baseImponible: "123,97 €",
+        iva: "26,03 €",
+        total: "150,00 €",
+        imagePath: "/demo-invoices/factura-grandes-almacenes.png",
+        fileName: "factura-grandes-almacenes.png"
+    }
+]
+
+
 
 // Función para generar el nombre sugerido
 const generateSuggestedName = (data) => {
     if (!data || !data.isValidInvoice) return null
 
-    // Limpiar y formatear la fecha (convertir a YYYY-MM-DD)
-    let fecha = data.fecha || 'SIN-FECHA'
-    // Intentar detectar formato DD/MM/YYYY o similar y convertir
+    // Convertir fecha a formato YYYYMMDD
+    let fecha = data.fecha || 'SINFECHA'
     const dateMatch = fecha.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/)
     if (dateMatch) {
         const day = dateMatch[1].padStart(2, '0')
         const month = dateMatch[2].padStart(2, '0')
         const year = dateMatch[3].length === 2 ? '20' + dateMatch[3] : dateMatch[3]
-        fecha = `${year}-${month}-${day}`
+        fecha = `${year}${month}${day}`
     }
 
-    // Usar marca comercial para el nombre (solo la denominación comercial corta)
-    const empresa = (data.marcaComercial || 'DESCONOCIDO')
-        .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '')
-        .replace(/\s+/g, '-')
-        .substring(0, 30)
-
-    // Número de factura
+    // Número de factura (limpiar caracteres especiales)
     const numero = (data.numeroFactura || 'SN')
-        .replace(/[^a-zA-Z0-9\-]/g, '')
+        .replace(/[^a-zA-Z0-9]/g, '')
 
     return NAMING_RULE
         .replace('{FECHA}', fecha)
-        .replace('{EMPRESA}', empresa)
         .replace('{NUMERO}', numero)
         + '.pdf'
 }
@@ -44,6 +120,22 @@ export default function InvoiceDemo() {
     const [result, setResult] = useState(null)
     const [error, setError] = useState(null)
     const [dragActive, setDragActive] = useState(false)
+
+    // En modo mock, cargar automáticamente una factura de demo al iniciar
+    const isMockMode = import.meta.env.VITE_DEMO_MOCK_MODE === 'true'
+
+    useEffect(() => {
+        if (isMockMode) {
+            // Seleccionar una factura aleatoria
+            const randomIndex = Math.floor(Math.random() * MOCK_INVOICES.length)
+            const mockInvoice = MOCK_INVOICES[randomIndex]
+
+            // Establecer la preview y los datos
+            setImagePreview(mockInvoice.imagePath)
+            setOriginalName(mockInvoice.fileName)
+            setResult({ ...mockInvoice, fecha: mockInvoice.fechaFactura })
+        }
+    }, [isMockMode])
 
     const handleDrag = useCallback((e) => {
         e.preventDefault()
@@ -92,6 +184,57 @@ export default function InvoiceDemo() {
         }
     }
 
+    // Función para comprimir imagen antes de enviar a la API (optimizada para Vercel Edge límite ~4MB)
+    const compressImage = (file, maxWidth = 600, quality = 0.5) => {
+        return new Promise((resolve) => {
+            // Si es PDF, no comprimir
+            if (file.type === 'application/pdf') {
+                const reader = new FileReader()
+                reader.onload = (e) => resolve({
+                    base64: e.target.result.split(',')[1],
+                    mimeType: file.type
+                })
+                reader.readAsDataURL(file)
+                return
+            }
+
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            const img = new Image()
+
+            img.onload = () => {
+                // Calcular nuevo tamaño manteniendo proporción
+                let width = img.width
+                let height = img.height
+
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width
+                    width = maxWidth
+                }
+
+                canvas.width = width
+                canvas.height = height
+
+                // Dibujar imagen comprimida
+                ctx.drawImage(img, 0, 0, width, height)
+
+                // Convertir a base64 con compresión
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality)
+                resolve({
+                    base64: compressedDataUrl.split(',')[1],
+                    mimeType: 'image/jpeg'
+                })
+            }
+
+            // Cargar imagen desde file
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                img.src = e.target.result
+            }
+            reader.readAsDataURL(file)
+        })
+    }
+
     const analyzeInvoice = async () => {
         if (!image) return
 
@@ -99,43 +242,57 @@ export default function InvoiceDemo() {
         setError(null)
         setResult(null)
 
+        // Modo mock para demos sin dependencia de API
+        const isMockMode = import.meta.env.VITE_DEMO_MOCK_MODE === 'true'
+
+        if (isMockMode) {
+            // Simular delay de procesamiento
+            await new Promise(resolve => setTimeout(resolve, 1500))
+
+            // Seleccionar una factura mock aleatoria
+            const randomIndex = Math.floor(Math.random() * MOCK_INVOICES.length)
+            const mockData = { ...MOCK_INVOICES[randomIndex] }
+            mockData.fecha = mockData.fechaFactura
+
+            setResult(mockData)
+            setLoading(false)
+            return
+        }
+
+        // Modo real: llamar a Gemini API
         try {
-            const reader = new FileReader()
-            reader.readAsDataURL(image)
+            // Comprimir imagen antes de enviar
+            const { base64: compressedBase64, mimeType: compressedMimeType } = await compressImage(image)
 
-            reader.onload = async () => {
-                const base64Data = reader.result.split(',')[1]
+            // Llamar a la API serverless (protege la API key)
+            const response = await fetch('/api/analyze-invoice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    imageBase64: compressedBase64,
+                    mimeType: compressedMimeType,
+                }),
+            })
 
-                // Llamar a la API serverless (protege la API key)
-                const response = await fetch('/api/analyze-invoice', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        imageBase64: base64Data,
-                        mimeType: image.type,
-                    }),
-                })
-
-                if (!response.ok) {
-                    const errorData = await response.json()
-                    throw new Error(errorData.error || 'Error al analizar la factura')
-                }
-
-                const data = await response.json()
-
-                // Añadir flag de factura válida para compatibilidad
-                if (data.nombreEmpresa || data.marcaComercial) {
-                    data.isValidInvoice = true
-                    data.fecha = data.fechaFactura
-                } else {
-                    data.isValidInvoice = false
-                }
-
-                setResult(data)
-                setLoading(false)
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Error al analizar la factura')
             }
+
+            const data = await response.json()
+
+            // Añadir flag de factura válida para compatibilidad
+            if (data.nombreEmpresa || data.marcaComercial) {
+                data.isValidInvoice = true
+                data.fecha = data.fechaFactura
+            } else {
+                data.isValidInvoice = false
+            }
+
+            setResult(data)
+            setLoading(false)
         } catch (err) {
             console.error(err)
             setError('Error al procesar la imagen. Inténtalo de nuevo.')
@@ -144,11 +301,22 @@ export default function InvoiceDemo() {
     }
 
     const reset = () => {
-        setImage(null)
-        setOriginalName('')
-        setImagePreview(null)
-        setResult(null)
-        setError(null)
+        // En modo mock, cargar otra factura aleatoria directamente
+        if (isMockMode) {
+            const randomIndex = Math.floor(Math.random() * MOCK_INVOICES.length)
+            const mockInvoice = MOCK_INVOICES[randomIndex]
+            setImagePreview(mockInvoice.imagePath)
+            setOriginalName(mockInvoice.fileName)
+            setResult({ ...mockInvoice, fecha: mockInvoice.fechaFactura })
+            setError(null)
+        } else {
+            // En modo real, volver al formulario de subida
+            setImage(null)
+            setOriginalName('')
+            setImagePreview(null)
+            setResult(null)
+            setError(null)
+        }
     }
 
     const suggestedName = result ? generateSuggestedName(result) : null
@@ -193,14 +361,23 @@ export default function InvoiceDemo() {
                     </label>
                 </div>
             ) : (
-                <div className="demo-content-no-preview">
+                <div className="demo-content-with-preview">
+                    {/* Preview de la imagen */}
+                    <div className="invoice-preview">
+                        <img
+                            src={imagePreview}
+                            alt="Preview de factura"
+                            className="invoice-preview-image"
+                        />
+                    </div>
+
                     {/* Indicador de archivo subido */}
                     <div className="file-uploaded">
                         <div className="file-uploaded-info">
                             <FileText size={24} />
                             <div className="file-uploaded-details">
                                 <span className="file-uploaded-name">{originalName}</span>
-                                <span className="file-uploaded-hint">Archivo listo para analizar</span>
+                                <span className="file-uploaded-hint">Archivo analizado</span>
                             </div>
                         </div>
                         <button className="file-uploaded-change" onClick={reset}>
