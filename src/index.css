@@ -2963,3 +2963,26 @@ html, body {
         width: 100% !important;
     }
 }
+/* FIX: Final Hero Cut-off Fix - Allow vertical growth */
+@media (max-width: 480px) {
+    .hero {
+        /* Remove strict overflow hiding that might clip content */
+        overflow: visible !important;
+        /* Ensure it can grow as tall as needed */
+        height: auto !important;
+        min-height: 100dvh !important;
+        /* Add significant padding at bottom so address bar doesn't hide content */
+        padding-bottom: 8rem !important;
+    }
+    
+    /* Ensure body allows scrolling but hides horizontal overflow */
+    body {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+    
+    .hero-bg {
+        /* Make background tall enough to cover extended padding */
+        height: 120% !important;
+    }
+}
