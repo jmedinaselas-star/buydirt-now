@@ -3062,3 +3062,21 @@ html, body {
         gap: 0.25rem !important;
     }
 }
+/* FIX: Timeline Order Unification (Text First) */
+@media (max-width: 768px) {
+    .timeline-step {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Force Text to always be first */
+    .step-content {
+        order: 1 !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    /* Force Visual to always be second */
+    .step-visual {
+        order: 2 !important;
+    }
+}
