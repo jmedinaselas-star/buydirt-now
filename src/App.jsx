@@ -490,7 +490,7 @@ function App() {
                                     <Shield size={28} />
                                 </div>
                                 <h3>Control Total</h3>
-                                <p>Tú apruebas cada documento. La IA sugiere, tú decides.</p>
+                                <p>Los documentos quedan recopilados y procesados, pendientes de tu validación</p>
                             </div>
 
                             <div className="feature-card">
