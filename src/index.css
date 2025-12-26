@@ -2879,3 +2879,51 @@ p {
         font-size: 0.8rem !important;
     }
 }
+/* 
+   ==========================================================================
+   ANDROID/MOBILE OVERFLOW SAFETIES (BULLETPROOF FIX)
+   ==========================================================================
+*/
+
+html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    position: relative !important;
+}
+
+@media (max-width: 768px) {
+    /* Safe Hero Layout */
+    .hero {
+        /* Use dynamic viewport height to avoid address bar issues */
+        min-height: 100dvh !important; 
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow: hidden !important;
+        /* Ensure no horizontal padding on the container itself */
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Force all direct children of hero to fit */
+    .hero .container {
+        width: 100% !important;
+        max-width: 100vw !important; /* Strict limit */
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        margin: 0 !important;
+        overflow: visible !important; /* Allow vertical overflow if needed */
+    }
+    
+    /* Strict image containment */
+    img, svg, video, canvas, .dashboard-preview {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Fix sticky/fixed elements causing scroll */
+    .header {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+}
