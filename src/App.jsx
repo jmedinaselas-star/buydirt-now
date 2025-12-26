@@ -68,6 +68,37 @@ function App() {
                 </div>
             </header>
 
+            {/* MOBILE MENU OVERLAY */}
+            {mobileMenuOpen && (
+                <div className="mobile-menu-overlay" style={{
+                    position: 'fixed',
+                    top: '70px',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'var(--color-bg-dark)',
+                    zIndex: 99,
+                    padding: '2rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2rem',
+                    borderTop: '1px solid var(--color-border-dark)'
+                }}>
+                    <nav style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', fontSize: '1.25rem', fontWeight: 500 }}>
+                        <a href="#problema" style={{ color: 'white', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>El Problema</a>
+                        <a href="#como-funciona" style={{ color: 'white', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Cómo Funciona</a>
+                        <a href="#beneficios" style={{ color: 'white', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Beneficios</a>
+                    </nav>
+                    <button
+                        onClick={() => { setMobileMenuOpen(false); setSignupEmail(''); setIsSignupModalOpen(true); }}
+                        className="btn btn-primary"
+                        style={{ width: '100%', justifyContent: 'center' }}
+                    >
+                        Solicitar Acceso
+                    </button>
+                </div>
+            )}
+
             <main>
                 {/* HERO SECTION */}
                 <section className="hero">
