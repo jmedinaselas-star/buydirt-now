@@ -482,7 +482,7 @@ function App() {
                                     <Zap size={28} />
                                 </div>
                                 <h3>Cero Fricción</h3>
-                                <p>Sin contraseñas para tus clientes. Subida directa y segura con magic links.</p>
+                                <p>Sin contraseñas para tus clientes. Subida directa y segura con enlace directo.</p>
                             </div>
 
                             <div className="feature-card">
