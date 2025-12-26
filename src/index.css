@@ -3080,3 +3080,36 @@ html, body {
         order: 2 !important;
     }
 }
+/* FIX: Build Uniformity in Timeline Cards */
+@media (max-width: 768px) {
+    .step-card, .step-card * {
+        /* Force consistent font sizing */
+    }
+    
+    .step-card p, 
+    .step-card span, 
+    .step-card div,
+    .step-card li {
+        font-size: 0.85rem !important; /* Unified body size */
+        line-height: 1.4 !important;
+    }
+
+    .step-card h3,
+    .step-card h4,
+    .step-card-header span {
+        font-size: 0.95rem !important; /* Unified header size */
+        font-weight: 600 !important;
+    }
+    
+    .step-card svg {
+        /* Ensure icons scale consistently */
+        width: 18px !important;
+        height: 18px !important;
+    }
+    
+    /* Specific override for the large upload icon */
+    .step-card .lucide-upload {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
