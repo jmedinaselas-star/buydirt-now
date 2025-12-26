@@ -2836,3 +2836,46 @@ p {
         padding-right: 1.25rem !important;
     }
 }
+
+/* FIX: Dashboard Item Overflow on Mobile */
+@media (max-width: 480px) {
+    .dashboard-preview {
+        padding: 1rem !important;
+    }
+
+    .dashboard-item {
+        padding: 0.75rem !important;
+        gap: 0.75rem !important;
+        flex-wrap: wrap !important; /* Allow wrapping */
+    }
+    
+    .item-content {
+        min-width: 0 !important; /* Allow shrinking */
+        flex: 1 !important;
+    }
+    
+    .item-content h4, 
+    .item-content p {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+    }
+    
+    .item-status {
+        font-size: 0.7rem !important;
+        padding: 0.2rem 0.5rem !important;
+        /* Make status take full width if wrapped */
+        width: auto !important;
+        margin-left: auto !important; /* Push to right */
+    }
+    
+    /* Adjust header */
+    .dashboard-header {
+        margin-bottom: 1rem !important;
+    }
+    
+    .dashboard-title {
+        font-size: 0.8rem !important;
+    }
+}
