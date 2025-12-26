@@ -22,6 +22,14 @@ export default async function handler(request) {
             });
         }
 
+        // Limit payload size to ~10MB to prevent DoS/memory issues
+        if (imageBase64.length > 13500000) {
+             return new Response(JSON.stringify({ error: 'Image too large (max 10MB)' }), {
+                status: 413,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         // IMPORTANTE: Usar siempre gemini-2.5-flash - NO CAMBIAR
         const model = genAI.getGenerativeModel({
@@ -64,7 +72,10 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
                 throw new Error('No JSON found in response');
             }
         } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+            console.error('JSON parse error:', parseError);
+            console.error('Raw text:', text);
+            // Don't leak raw text or error details
+            return new Response(JSON.stringify({ error: 'Failed to process invoice response' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -76,7 +87,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // Don't leak specific error message to client (security best practice)
+        return new Response(JSON.stringify({ error: 'An error occurred while analyzing the invoice' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
