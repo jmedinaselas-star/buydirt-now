@@ -12,6 +12,7 @@ import {
     BellRing,
     Upload,
     FileCheck,
+    FileText,
     HardDrive,
     Clock,
     AlertCircle,
@@ -193,19 +194,19 @@ function App() {
                                     </div>
 
                                     <div className="chaos-item">
-                                        <span>📱 "Juan, ¿me puedes pasar las facturas?"</span>
+                                        <span><Smartphone size={16} className="chaos-icon" /> "Juan, ¿me puedes pasar las facturas?"</span>
                                         <span className="time">+15 min</span>
                                     </div>
                                     <div className="chaos-item">
-                                        <span>📧 Buscando emails con adjuntos...</span>
+                                        <span><Mail size={16} className="chaos-icon" /> Buscando emails con adjuntos...</span>
                                         <span className="time">+10 min</span>
                                     </div>
                                     <div className="chaos-item">
-                                        <span>📁 Renombrando IMG_2094.jpg...</span>
+                                        <span><FileText size={16} className="chaos-icon" /> Renombrando IMG_2094.jpg...</span>
                                         <span className="time">+5 min</span>
                                     </div>
                                     <div className="chaos-item">
-                                        <span>☎️ 3ª llamada de seguimiento...</span>
+                                        <span><Clock size={16} className="chaos-icon" /> 3ª llamada de seguimiento...</span>
                                         <span className="time">+20 min</span>
                                     </div>
                                 </div>

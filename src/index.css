@@ -2548,3 +2548,82 @@ p {
         padding: 0.2rem 0.4rem;
     }
 }
+
+/* ============================================
+   TIMELINE RESPONSIVE FIX
+   ============================================ */
+@media (max-width: 768px) {
+    /* Timeline - todos los pasos a la derecha en móvil */
+    .timeline {
+        width: 100%;
+    }
+    
+    .timeline-line {
+        left: 20px !important;
+    }
+    
+    .timeline-step {
+        width: 100% !important;
+        padding-left: 50px !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        text-align: left !important;
+    }
+    
+    .timeline-step:nth-child(odd),
+    .timeline-step:nth-child(even) {
+        margin-left: 0 !important;
+        padding-left: 50px !important;
+        padding-right: 0 !important;
+        text-align: left !important;
+    }
+    
+    .timeline-step::before {
+        left: 10px !important;
+        right: auto !important;
+    }
+    
+    .step-content {
+        width: 100% !important;
+        text-align: left !important;
+    }
+    
+    /* Secciones - usar ancho completo */
+    .section,
+    .section-container,
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        box-sizing: border-box;
+    }
+    
+    /* Asegurar que el contenido use todo el ancho */
+    .hero-content,
+    .benefits-content,
+    .workflow-content,
+    .demo-content,
+    .integrations-content,
+    .calculator-content,
+    .security-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto;
+    }
+    
+    /* Cards y grids a ancho completo */
+    .benefit-card,
+    .integration-card,
+    .feature-card {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Chaos item icons styling */
+.chaos-icon {
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    opacity: 0.8;
+}
