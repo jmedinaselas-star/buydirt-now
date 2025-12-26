@@ -4,85 +4,46 @@ import { Upload, FileCheck, AlertCircle, Loader2, X, FileText, ArrowRight } from
 // Regla de renombrado predefinida: YYYYMMDD_NumFactura
 const NAMING_RULE = "{FECHA}_{NUMERO}"
 
-// Datos mock para demo sin API - DATOS FICTICIOS EVIDENTES
+// Datos mock para demo sin API
 const MOCK_INVOICES = [
     {
         isValidInvoice: true,
-        nifEmisor: "B-00-DEMO-001",
-        nombreEmpresa: "ESTACIÓN DE SERVICIO DEMO S.L.",
-        marcaComercial: "Repsoil",
-        fechaFactura: "15/11/2024",
-        numeroFactura: "DEMO-2024-001234",
-        baseImponible: "45,00 €",
-        iva: "9,45 €",
-        total: "54,45 €",
-        imagePath: "/demo-invoices/factura-repsoil.png",
-        fileName: "factura-repsoil.png"
+        nifEmisor: "B-87654321",
+        nombreEmpresa: "ASADOR LOS LEÑOS S.L.",
+        marcaComercial: "Asador Los Leños",
+        fechaFactura: "22/12/2024",
+        numeroFactura: "F/2024-8921",
+        baseImponible: "77,73 €",
+        iva: "7,77 €",
+        total: "85,50 €",
+        imagePath: "/demo-invoices/invoice_restaurant_real.png",
+        fileName: "scan_restaurante_lenos.jpg"
     },
     {
         isValidInvoice: true,
-        nifEmisor: "B-00-DEMO-002",
-        nombreEmpresa: "TELÉFONO ROJO S.L.",
-        marcaComercial: "Teléfono Rojo",
-        fechaFactura: "28/11/2024",
-        numeroFactura: "DEMO-2024-789456",
-        baseImponible: "35,54 €",
-        iva: "7,46 €",
-        total: "43,00 €",
-        imagePath: "/demo-invoices/factura-telefono-rojo.png",
-        fileName: "factura-telefono-rojo.png"
+        nifEmisor: "B-91234567",
+        nombreEmpresa: "TECHNOVA SOLUCIONES S.L.",
+        marcaComercial: "TechNova",
+        fechaFactura: "10/01/2025",
+        numeroFactura: "FACT-25-0042",
+        baseImponible: "450,00 €",
+        iva: "94,50 €",
+        total: "544,50 €",
+        imagePath: "/demo-invoices/invoice_tech_real.png",
+        fileName: "factura_technova_enero.pdf"
     },
     {
         isValidInvoice: true,
-        nifEmisor: "B-00-DEMO-003",
-        nombreEmpresa: "AMAZONIA TIENDA ONLINE S.L.",
-        marcaComercial: "Amazonia",
-        fechaFactura: "02/12/2024",
-        numeroFactura: "DEMO-ES-2024-5678901",
-        baseImponible: "82,64 €",
-        iva: "17,35 €",
-        total: "99,99 €",
-        imagePath: "/demo-invoices/factura-amazonia.png",
-        fileName: "factura-amazonia.png"
-    },
-    {
-        isValidInvoice: true,
-        nifEmisor: "B-00-DEMO-004",
-        nombreEmpresa: "SUPERMERCADOS EJEMPLO S.L.",
-        marcaComercial: "Supermercados Ejemplo",
-        fechaFactura: "10/12/2024",
-        numeroFactura: "DEMO-2024-003421",
-        baseImponible: "67,23 €",
-        iva: "6,72 €",
-        total: "73,95 €",
-        imagePath: "/demo-invoices/factura-supermercados-ejemplo.png",
-        fileName: "factura-supermercados-ejemplo.png"
-    },
-    {
-        isValidInvoice: true,
-        nifEmisor: "B-00-DEMO-005",
-        nombreEmpresa: "ELECTRICIDAD DEMO S.A.",
-        marcaComercial: "Electricidad Demo",
-        fechaFactura: "01/12/2024",
-        numeroFactura: "DEMO-2024-456123",
-        baseImponible: "89,25 €",
-        iva: "18,74 €",
-        total: "107,99 €",
-        imagePath: "/demo-invoices/factura-electricidad-demo.png",
-        fileName: "factura-electricidad-demo.png"
-    },
-    {
-        isValidInvoice: true,
-        nifEmisor: "B-00-DEMO-006",
-        nombreEmpresa: "GRANDES ALMACENES DEMO S.A.",
-        marcaComercial: "Grandes Almacenes Demo",
-        fechaFactura: "05/12/2024",
-        numeroFactura: "DEMO-2024-987654",
-        baseImponible: "123,97 €",
-        iva: "26,03 €",
-        total: "150,00 €",
-        imagePath: "/demo-invoices/factura-grandes-almacenes.png",
-        fileName: "factura-grandes-almacenes.png"
+        nifEmisor: "A-20245567",
+        nombreEmpresa: "ALMACENES EL MARTILLO S.A.",
+        marcaComercial: "El Martillo Construcción",
+        fechaFactura: "15/12/2024",
+        numeroFactura: "A-2024/5567",
+        baseImponible: "103,64 €",
+        iva: "21,76 €",
+        total: "125,40 €",
+        imagePath: "/demo-invoices/invoice_construction_real.png",
+        fileName: "albaran_martillo_cemento.jpg"
     }
 ]
 
