@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
@@ -64,7 +65,9 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
                 throw new Error('No JSON found in response');
             }
         } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+            console.error('JSON Parse Error:', parseError);
+            // Sentinel: Don't leak raw AI output
+            return new Response(JSON.stringify({ error: 'Failed to process AI response' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -76,7 +79,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // Sentinel: Don't leak stack traces or internal details
+        return new Response(JSON.stringify({ error: 'Internal Server Error processing invoice' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
