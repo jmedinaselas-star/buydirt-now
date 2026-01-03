@@ -55,6 +55,7 @@ const generateSuggestedName = (data) => {
 
     // Convertir fecha a formato YYYYMMDD
     let fecha = data.fecha || 'SINFECHA'
+    // eslint-disable-next-line no-useless-escape
     const dateMatch = fecha.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/)
     if (dateMatch) {
         const day = dateMatch[1].padStart(2, '0')
