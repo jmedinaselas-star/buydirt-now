@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 
+// eslint-disable-next-line no-unused-vars
 export default function LegalModal({ isOpen, onClose, initialSection = 'privacy' }) {
     if (!isOpen) return null
 

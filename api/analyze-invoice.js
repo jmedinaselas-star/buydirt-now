@@ -1,14 +1,49 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
     runtime: 'edge',
 };
 
+// Helper function to get secure CORS headers based on origin
+function getCorsHeaders(request) {
+    const origin = request.headers.get('Origin');
+    const allowedOrigins = [
+        'http://localhost:5173', // Local Vite dev
+        'http://localhost:4173', // Local Vite preview
+        // Add production domains here if known, e.g.:
+        // 'https://metallic-interstellar.vercel.app',
+    ];
+
+    // Check if origin matches allowed list or if it's a Vercel preview deployment
+    const isAllowed = origin && (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') // Allow Vercel preview/production domains
+    );
+
+    return {
+        'Access-Control-Allow-Origin': isAllowed ? origin : 'null',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Content-Type': 'application/json'
+    };
+}
+
 export default async function handler(request) {
+    const corsHeaders = getCorsHeaders(request);
+
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 204,
+            headers: corsHeaders
+        });
+    }
+
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
             status: 405,
-            headers: { 'Content-Type': 'application/json' },
+            headers: corsHeaders,
         });
     }
 
@@ -18,7 +53,15 @@ export default async function handler(request) {
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' },
+                headers: corsHeaders,
+            });
+        }
+
+        if (!process.env.GEMINI_API_KEY) {
+            console.error('Missing GEMINI_API_KEY');
+            return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+                status: 500,
+                headers: corsHeaders,
             });
         }
 
@@ -63,22 +106,22 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
             } else {
                 throw new Error('No JSON found in response');
             }
-        } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+        } catch {
+            return new Response(JSON.stringify({ error: 'Failed to parse response' }), {
                 status: 500,
-                headers: { 'Content-Type': 'application/json' },
+                headers: corsHeaders,
             });
         }
 
         return new Response(JSON.stringify(jsonData), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: corsHeaders,
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: 'Error processing invoice' }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' },
+            headers: corsHeaders,
         });
     }
 }

@@ -1,0 +1,4 @@
+## 2025-05-23 - Secure Error Handling & CORS in Vercel Edge Functions
+**Vulnerability:** Information leakage via raw error messages and permissive CORS.
+**Learning:** The `@google/generative-ai` library and standard Vercel functions can expose stack traces or API keys in error objects. Additionally, Vercel Edge Functions do not automatically handle CORS for cross-origin use cases (like local dev against prod API or preview environments), requiring manual implementation of `OPTIONS` handling and origin validation.
+**Prevention:** Always wrap API logic in try/catch blocks that log the full error server-side but return a generic "Internal Server Error" message to the client. Implement a `getCorsHeaders` helper that validates the `Origin` header against a strict whitelist (e.g., localhost, specific domains) instead of using `Access-Control-Allow-Origin: *`.
