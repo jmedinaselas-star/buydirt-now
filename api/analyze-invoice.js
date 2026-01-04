@@ -4,6 +4,7 @@ export const config = {
     runtime: 'edge',
 };
 
+/* eslint-disable no-undef */
 export default async function handler(request) {
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
@@ -63,7 +64,7 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
             } else {
                 throw new Error('No JSON found in response');
             }
-        } catch (parseError) {
+        } catch (parseError) { // eslint-disable-line no-unused-vars
             return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
@@ -76,7 +77,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // Return generic error message to client to prevent leaking sensitive info
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
