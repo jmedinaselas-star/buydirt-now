@@ -1,24 +1,57 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
     runtime: 'edge',
 };
 
+// CORS headers for all responses
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*', // Adjust this to your specific domain in production
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
 export default async function handler(request) {
+    // Handle CORS preflight request
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 204,
+            headers: corsHeaders,
+        });
+    }
+
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
             status: 405,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders
+            },
         });
     }
 
     try {
+        if (!process.env.GEMINI_API_KEY) {
+            console.error('Server configuration error: GEMINI_API_KEY is missing');
+            return new Response(JSON.stringify({ error: 'Internal server error' }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
+                },
+            });
+        }
+
         const { imageBase64, mimeType } = await request.json();
 
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
+                },
             });
         }
 
@@ -64,21 +97,32 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
                 throw new Error('No JSON found in response');
             }
         } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+            console.error('Failed to parse Gemini response:', text);
+            return new Response(JSON.stringify({ error: 'Failed to process invoice' }), {
                 status: 500,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
+                },
             });
         }
 
         return new Response(JSON.stringify(jsonData), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders
+            },
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // Return a generic error message to avoid leaking internal details
+        return new Response(JSON.stringify({ error: 'An error occurred while processing the request' }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders
+            },
         });
     }
 }
