@@ -76,7 +76,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // Generic error message to prevent leaking sensitive details
+        return new Response(JSON.stringify({ error: 'Failed to process invoice' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
