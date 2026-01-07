@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
@@ -17,6 +19,14 @@ export default async function handler(request) {
 
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+        if (!allowedMimeTypes.includes(mimeType)) {
+            return new Response(JSON.stringify({ error: 'Invalid mimeType' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -63,8 +73,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
             } else {
                 throw new Error('No JSON found in response');
             }
-        } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+        } catch (_) {
+            return new Response(JSON.stringify({ error: 'Failed to parse response' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -76,7 +86,7 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
