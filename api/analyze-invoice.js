@@ -4,25 +4,73 @@ export const config = {
     runtime: 'edge',
 };
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
 export default async function handler(request) {
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 204,
+            headers: corsHeaders,
+        });
+    }
+
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
             status: 405,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders,
+            },
         });
     }
 
     try {
-        const { imageBase64, mimeType } = await request.json();
+        let body;
+        try {
+            body = await request.json();
+        } catch (e) { // eslint-disable-line no-unused-vars
+            return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders,
+                },
+            });
+        }
+
+        const { imageBase64, mimeType } = body;
 
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders,
+                },
             });
         }
 
+        if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+            return new Response(JSON.stringify({ error: 'Invalid mimeType. Allowed: ' + ALLOWED_MIME_TYPES.join(', ') }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders,
+                },
+            });
+        }
+
+        /* eslint-disable no-undef */
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        /* eslint-enable no-undef */
+
         // IMPORTANTE: Usar siempre gemini-2.5-flash - NO CAMBIAR
         const model = genAI.getGenerativeModel({
             model: 'gemini-2.5-flash',
@@ -64,21 +112,32 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
                 throw new Error('No JSON found in response');
             }
         } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+            console.error('JSON Parse Error:', parseError);
+            console.error('Raw Text:', text);
+            return new Response(JSON.stringify({ error: 'Failed to parse response' }), { // Removed raw: text to avoid leak
                 status: 500,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders,
+                },
             });
         }
 
         return new Response(JSON.stringify(jsonData), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders,
+            },
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: 'An error occurred during invoice analysis' }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders,
+            },
         });
     }
 }
