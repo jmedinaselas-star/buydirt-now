@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
@@ -17,6 +18,15 @@ export default async function handler(request) {
 
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        // Validate MIME type
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+        if (!allowedMimeTypes.includes(mimeType)) {
+             return new Response(JSON.stringify({ error: 'Invalid mimeType. Allowed: jpeg, png, webp, pdf' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -64,7 +74,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
                 throw new Error('No JSON found in response');
             }
         } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+            console.error('JSON Parse error:', parseError);
+            return new Response(JSON.stringify({ error: 'Failed to parse response' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -76,7 +87,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // SECURITY: Do not leak error.message as it may contain API keys from the Google SDK
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
