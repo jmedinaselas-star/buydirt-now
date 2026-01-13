@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
@@ -17,6 +18,15 @@ export default async function handler(request) {
 
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        // Security: Validate MIME type to prevent unsupported file processing
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+        if (!allowedMimeTypes.includes(mimeType)) {
+            return new Response(JSON.stringify({ error: 'Invalid mimeType' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -64,7 +74,9 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
                 throw new Error('No JSON found in response');
             }
         } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+            console.error('JSON Parse error:', parseError);
+            // Security: Do not leak raw response text which might contain sensitive info or hallucinations
+            return new Response(JSON.stringify({ error: 'Failed to parse response' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -76,7 +88,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // Security: Return generic error message to client to prevent information leakage (e.g. API keys, stack traces)
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
