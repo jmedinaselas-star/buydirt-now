@@ -1,14 +1,36 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
     runtime: 'edge',
 };
 
+const ALLOWED_MIME_TYPES = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'application/pdf',
+]);
+
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+};
+
 export default async function handler(request) {
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 204,
+            headers: CORS_HEADERS,
+        });
+    }
+
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
             status: 405,
-            headers: { 'Content-Type': 'application/json' },
+            headers: CORS_HEADERS,
         });
     }
 
@@ -18,7 +40,14 @@ export default async function handler(request) {
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' },
+                headers: CORS_HEADERS,
+            });
+        }
+
+        if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+            return new Response(JSON.stringify({ error: 'Invalid or unsupported MIME type' }), {
+                status: 400,
+                headers: CORS_HEADERS,
             });
         }
 
@@ -64,21 +93,22 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
                 throw new Error('No JSON found in response');
             }
         } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+            console.error('Parse error:', parseError);
+            return new Response(JSON.stringify({ error: 'Failed to parse response' }), {
                 status: 500,
-                headers: { 'Content-Type': 'application/json' },
+                headers: CORS_HEADERS,
             });
         }
 
         return new Response(JSON.stringify(jsonData), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: CORS_HEADERS,
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: 'An error occurred while processing the invoice' }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' },
+            headers: CORS_HEADERS,
         });
     }
 }
