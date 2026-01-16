@@ -1,0 +1,4 @@
+## 2024-03-27 - CORS and Error Sanitization in Vercel Edge Functions
+**Vulnerability:** API endpoint `api/analyze-invoice.js` lacked CORS headers and leaked detailed error messages (including upstream API details) to the client.
+**Learning:** Vercel Edge Functions do not automatically handle CORS; `OPTIONS` requests must be manually handled and headers added to all responses. Raw error objects from libraries like `@google/generative-ai` can contain sensitive info.
+**Prevention:** Always implement a CORS handling pattern (middleware or helper) and wrap execution in a try-catch that logs full errors but returns generic messages to the client.
