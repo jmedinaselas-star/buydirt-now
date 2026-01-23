@@ -4,6 +4,13 @@ export const config = {
     runtime: 'edge',
 };
 
+const ALLOWED_MIME_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'application/pdf',
+];
+
 export default async function handler(request) {
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
@@ -17,6 +24,13 @@ export default async function handler(request) {
 
         if (!imageBase64 || !mimeType) {
             return new Response(JSON.stringify({ error: 'Missing imageBase64 or mimeType' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+            return new Response(JSON.stringify({ error: 'Invalid MIME type' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -76,7 +90,7 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: 'Internal server error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
