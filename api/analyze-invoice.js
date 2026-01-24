@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
@@ -63,8 +64,9 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
             } else {
                 throw new Error('No JSON found in response');
             }
-        } catch (parseError) {
-            return new Response(JSON.stringify({ error: 'Failed to parse response', raw: text }), {
+        } catch (parseError) { // eslint-disable-line no-unused-vars
+            console.error('Failed to parse response:', text);
+            return new Response(JSON.stringify({ error: 'Failed to parse response from AI service' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -76,7 +78,8 @@ Si NO es factura: {"isValidInvoice":false,"reason":"X"}`;
         });
     } catch (error) {
         console.error('Gemini API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        // Return a generic error message to avoid leaking sensitive details
+        return new Response(JSON.stringify({ error: 'Failed to process invoice. Please try again later.' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
